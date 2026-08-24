@@ -68,6 +68,12 @@ cd "$STEAM_HOME"
     +quit
 EOF
 
+# Copy server config
+echo "[*] Copying server configuration..."
+mkdir -p "$L4D2_HOME/left4dead2/cfg"
+cp "$SCRIPT_DIR/server.cfg" "$L4D2_HOME/left4dead2/cfg/server.cfg"
+chown "$STEAM_USER:$STEAM_USER" "$L4D2_HOME/left4dead2/cfg/server.cfg"
+
 echo "[*] Installation complete!"
 echo ""
 echo "=== Server Configuration ==="
