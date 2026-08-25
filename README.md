@@ -20,6 +20,8 @@ This will:
 2. Download SteamCMD
 3. Create `steamcmd` user
 4. Download L4D2 server files
+5. Install Metamod:Source (plugin loader)
+6. Install SourceMod (admin/plugin system)
 
 ## Configuration
 
@@ -29,6 +31,35 @@ Edit `server.cfg` to customize:
 - Max players
 - Friendly fire settings
 - RCON password
+
+## SourceMod & Metamod
+
+Server includes **Metamod:Source** (plugin loader) and **SourceMod** (admin/plugin framework).
+
+**SourceMod directories:**
+- Plugins: `/opt/steamcmd/l4d2_server/left4dead2/addons/sourcemod/plugins/`
+- Configs: `/opt/steamcmd/l4d2_server/left4dead2/addons/sourcemod/configs/`
+- Data: `/opt/steamcmd/l4d2_server/left4dead2/addons/sourcemod/data/`
+
+**Add admin:**
+Edit `/opt/steamcmd/l4d2_server/left4dead2/addons/sourcemod/configs/admins.cfg`:
+```
+"STEAM_ID:0:XXXXXXXXX"
+{
+    "admin"    "99:z"
+}
+```
+
+**Install plugins:**
+1. Download `.smx` files to `addons/sourcemod/plugins/`
+2. Restart server or use `sm plugins load <name>`
+
+**SourceMod commands (RCON):**
+```
+sm_version        - Show SourceMod version
+sm_plugins list   - List loaded plugins
+sm_reload_plugins - Reload all plugins
+```
 
 ## Running Server
 
