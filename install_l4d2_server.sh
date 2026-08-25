@@ -2,6 +2,12 @@
 
 set -e
 
+# Set timezone to Asia/Ho_Chi_Minh non-interactively
+export TZ=Asia/Ho_Chi_Minh
+export DEBIAN_FRONTEND=noninteractive
+ln -fs /usr/share/zoneinfo/Asia/Ho_Chi_Minh /etc/localtime
+echo "Asia/Ho_Chi_Minh" | tee /etc/timezone
+
 # Install SteamCMD and host L4D2 dedicated server
 
 STEAM_USER="steamcmd"
@@ -13,23 +19,38 @@ echo "=== L4D2 Dedicated Server Setup ==="
 
 # Update system
 echo "[*] Updating system packages..."
-apt-get update
-apt-get install -y curl wget software-properties-common
+apt update
+apt install -y curl wget software-properties-common
+add-apt-repository -y multiverse
 
 # Add 32-bit architecture support
 dpkg --add-architecture i386
+apt update
+
+# Install en_US.UTF-8 locale
+echo "[*] Installing en_US.UTF-8 locale..."
+apt-get install -y locales
+locale-gen en_US.UTF-8
+update-locale LANG=en_US.UTF-8
 
 # Install dependencies
 echo "[*] Installing dependencies..."
 apt-get update
+
+echo steam steam/question select "I AGREE" | debconf-set-selections
+echo steam steam/license note '' | debconf-set-selections
+
 apt-get install -y \
     lib32gcc-s1 \
     lib32stdc++6 \
     libc6:i386 \
     libstdc++6:i386 \
+    gcc-multilib \
     curl \
     wget \
-    ca-certificates
+    ca-certificates \
+    vim \
+    steamcmd
 
 # Create steam user
 echo "[*] Creating steam user..."
@@ -39,13 +60,9 @@ if ! id "$STEAM_USER" &>/dev/null; then
     chown -R "$STEAM_USER:$STEAM_USER" "$STEAM_HOME"
 fi
 
-# Download SteamCMD
-echo "[*] Downloading SteamCMD..."
+# Create SteamCMD home directory
+echo "[*] Setting up SteamCMD directory..."
 mkdir -p "$STEAM_HOME"
-cd "$STEAM_HOME"
-curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" | tar xz
-
-# Set permissions
 chown -R "$STEAM_USER:$STEAM_USER" "$STEAM_HOME"
 
 # Install L4D2 server
@@ -54,25 +71,23 @@ mkdir -p "$L4D2_HOME"
 chown "$STEAM_USER:$STEAM_USER" "$L4D2_HOME"
 
 su - "$STEAM_USER" << EOF
-cd "$STEAM_HOME"
-./steamcmd.sh +force_install_dir "$L4D2_HOME" \
+steamcmd +force_install_dir "$L4D2_HOME" \
     +login anonymous \
     +@sSteamCmdForcePlatformType windows \
     +app_update 222860 validate \
     +quit
 
-./steamcmd.sh +force_install_dir "$L4D2_HOME" \
+steamcmd +force_install_dir "$L4D2_HOME" \
     +login anonymous \
     +@sSteamCmdForcePlatformType linux \
     +app_update 222860 validate \
     +quit
 EOF
 
-# Copy server config
-echo "[*] Copying server configuration..."
+# Link server config
+echo "[*] Linking server configuration..."
 mkdir -p "$L4D2_HOME/left4dead2/cfg"
-cp "$SCRIPT_DIR/server.cfg" "$L4D2_HOME/left4dead2/cfg/server.cfg"
-chown "$STEAM_USER:$STEAM_USER" "$L4D2_HOME/left4dead2/cfg/server.cfg"
+ln -s "$SCRIPT_DIR/server.cfg" "$L4D2_HOME/left4dead2/cfg/server.cfg"
 
 echo "[*] Installation complete!"
 echo ""

@@ -1,13 +1,27 @@
 version: "3.8"
 
 services:
-  ubuntu:
-    image: ubuntu:latest
-    container_name: ubuntu_container
-    stdin_open: true
-    tty: true
-    command: /bin/bash
+  # ubuntu:
+  #   image: ubuntu:latest
+  #   container_name: ubuntu_container
+  #   stdin_open: true
+  #   tty: true
+  #   command: /bin/bash
+  #   ports:
+  #     - "27016:27015/tcp"
+  #     - "27016:27015/udp"
+  #   volumes:
+  #     - .:/work
+
+  l4d2_server:
+    build: .
+    container_name: l4d2_server
     ports:
-      - 27015:27015
+      - "27016:27015/tcp"
+      - "27016:27015/udp"
+      - "27020:27020/tcp"
+      - "27020:27020/udp"
     volumes:
       - .:/work
+    stdin_open: true
+    tty: true
