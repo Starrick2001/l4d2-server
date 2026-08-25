@@ -22,6 +22,6 @@ services:
       - "27020:27020/tcp"
       - "27020:27020/udp"
     volumes:
-      - .:/work
+      - ./scripts:/work
     stdin_open: true
     tty: true

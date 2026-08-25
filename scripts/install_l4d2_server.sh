@@ -84,6 +84,39 @@ steamcmd +force_install_dir "$L4D2_HOME" \
     +quit
 EOF
 
+# Install Metamod:Source
+echo "[*] Installing Metamod:Source..."
+# su - "$STEAM_USER" << 'EOF'
+cd "$L4D2_HOME/left4dead2"
+mkdir -p addons
+
+# Download latest Metamod:Source
+# METAMOD_URL="https://mms.alliedmods.net/mmsdrop/1.11/mmsource-1.11.0-git1148-linux.tar.gz"
+METAMOD_URL="https://github.com/alliedmodders/metamod-source/releases/download/1.12.0.1225/mmsource-1.12.0-git1225-linux.tar.gz"
+wget -O /tmp/metamod.tar.gz "$METAMOD_URL" 2>/dev/null || \
+    (echo "Failed to download Metamod from primary URL, trying fallback..." && \
+     wget -O /tmp/metamod.tar.gz "https://mms.alliedmods.net/mmsdrop/1.11/mmsource-latest-linux.tar.gz" 2>/dev/null)
+
+tar -xzf /tmp/metamod.tar.gz
+rm /tmp/metamod.tar.gz
+# EOF
+
+# Install SourceMod
+echo "[*] Installing SourceMod..."
+# su - "$STEAM_USER" << 'EOF'
+cd "$L4D2_HOME/left4dead2"
+
+# Download latest SourceMod
+# SOURCEMOD_URL="https://sm.alliedmods.net/smdrop/1.11/sourcemod-1.11.0-git6970-linux.tar.gz"
+SOURCEMOD_URL="https://github.com/alliedmodders/sourcemod/releases/download/1.12.0.7250/sourcemod-1.12.0-git7250-linux.tar.gz"
+wget -O /tmp/sourcemod.tar.gz "$SOURCEMOD_URL" 2>/dev/null || \
+    (echo "Failed to download SourceMod from primary URL, trying fallback..." && \
+     wget -O /tmp/sourcemod.tar.gz "https://sm.alliedmods.net/smdrop/1.11/sourcemod-latest-linux.tar.gz" 2>/dev/null)
+
+tar -xzf /tmp/sourcemod.tar.gz
+rm /tmp/sourcemod.tar.gz
+# EOF
+
 # Link server config
 echo "[*] Linking server configuration..."
 mkdir -p "$L4D2_HOME/left4dead2/cfg"
