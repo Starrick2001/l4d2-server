@@ -34,6 +34,7 @@ cd "$L4D2_HOME"
     -console \
     -steam_dir /opt/steamcmd \
     -steamcmd_script /opt/steamcmd/update_script.txt \
+    -nomaster \
     +runscript update_script.txt \
     +hostport $SERVER_PORT \
     +tv_port $TV_PORT \
