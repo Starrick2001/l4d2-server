@@ -35,6 +35,7 @@ cd "$L4D2_HOME"
     -steam_dir /opt/steamcmd \
     -steamcmd_script /opt/steamcmd/update_script.txt \
     -nomaster \
+    -maxplayers $MAXPLAYERS \
     +runscript update_script.txt \
     +hostport $SERVER_PORT \
     +tv_port $TV_PORT \
@@ -45,5 +46,6 @@ cd "$L4D2_HOME"
     +map $MAP \
     +ip 0.0.0.0 \
     +port 27015 \
-    +exec server.cfg
+    +exec server.cfg \
+    +sv_gametypes versus +mp_gamemode versus
 EOF
