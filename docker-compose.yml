@@ -21,6 +21,8 @@ services:
       - "27016:27015/udp"
       - "27020:27020/tcp"
       - "27020:27020/udp"
+    cpus: 1
+    mem_limit: "1g"
     volumes:
       - ./scripts:/work
     stdin_open: true
