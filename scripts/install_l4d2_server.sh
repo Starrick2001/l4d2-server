@@ -118,62 +118,45 @@ tar -xzf /tmp/sourcemod.tar.gz
 rm /tmp/sourcemod.tar.gz
 # EOF
 
-# Install L4DToolZ (lakwsh fork: maxplayers/tickrate unlock)
+# Install L4DToolZ (Accelerator74, L4D2 Linux build)
 echo "[*] Installing L4DToolZ..."
-cd "$L4D2_HOME/left4dead2"
-L4DTOOLZ_VERSION="2.5.1"
-L4DTOOLZ_URL="https://github.com/lakwsh/l4dtoolz/releases/download/${L4DTOOLZ_VERSION}/l4dtoolz-${L4DTOOLZ_VERSION}-main.zip"
-wget -O /tmp/l4dtoolz.zip "$L4DTOOLZ_URL"
-TMPDIR_L4DTOOLZ="$(mktemp -d)"
-unzip -o -q /tmp/l4dtoolz.zip -d "$TMPDIR_L4DTOOLZ"
-if [ -d "$TMPDIR_L4DTOOLZ/addons" ]; then
-    cp -r "$TMPDIR_L4DTOOLZ/addons/." "$L4D2_HOME/left4dead2/addons/"
-else
-    mkdir -p "$L4D2_HOME/left4dead2/addons"
-    cp -r "$TMPDIR_L4DTOOLZ/." "$L4D2_HOME/left4dead2/addons/"
-fi
-rm -rf "$TMPDIR_L4DTOOLZ" /tmp/l4dtoolz.zip
-# Sanity check: metamod should pick this up as addons/metamod/l4dtoolz.vdf
+L4DTOOLZ_VERSION="2.2.0"
+L4DTOOLZ_URL="https://github.com/Accelerator74/l4dtoolz/releases/download/${L4DTOOLZ_VERSION}/l4dtoolz-l4d2-linux-ef2a8df.tar.gz"
+(
+    L4DTOOLZ_ARCHIVE="$(mktemp)"
+    trap 'rm -f "$L4DTOOLZ_ARCHIVE"' EXIT
+    wget -O "$L4DTOOLZ_ARCHIVE" "$L4DTOOLZ_URL"
+    tar -xzf "$L4DTOOLZ_ARCHIVE" -C "$L4D2_HOME/left4dead2"
+)
 if [ ! -f "$L4D2_HOME/left4dead2/addons/metamod/l4dtoolz.vdf" ]; then
-    echo "WARNING: l4dtoolz.vdf not found after extract; check L4DTOOLZ_URL layout"
-fi
-
-# Install SuperVersus SourceMod plugin (Super Versus Reloaded, up to 32 players w/ L4DToolZ)
-echo "[*] Installing SuperVersus..."
-SUPERVERSUS_SP_URL="https://raw.githubusercontent.com/sappykun/l4d_superversus/main/l4d_superversus.sp"
-SUPERVERSUS_SMX_FALLBACK_URL="https://raw.githubusercontent.com/Lt-Arashi/L4D2-Server-Plugins/Sm1.12_Test/addons/sourcemod/plugins/SuperVersus/SuperVersus.smx"
-LEFT4DHOOKS_INC_URL="https://raw.githubusercontent.com/SilvDev/Left4DHooks/main/sourcemod/scripting/include/left4dhooks.inc"
-mkdir -p "$L4D2_HOME/left4dead2/addons/sourcemod/plugins" \
-         "$L4D2_HOME/left4dead2/addons/sourcemod/scripting/include" \
-         "$L4D2_HOME/left4dead2/addons/sourcemod/scripting"
-SUPERVERSUS_COMPILED=0
-chmod +x "$L4D2_HOME/left4dead2/addons/sourcemod/scripting/spcomp" "$L4D2_HOME/left4dead2/addons/sourcemod/scripting/spcomp64" 2>/dev/null || true
-if [ -x "$L4D2_HOME/left4dead2/addons/sourcemod/scripting/spcomp" ]; then
-    SPCOMP="$L4D2_HOME/left4dead2/addons/sourcemod/scripting/spcomp"
-else
-    SPCOMP="$L4D2_HOME/left4dead2/addons/sourcemod/scripting/spcomp64"
-fi
-if wget -O "$L4D2_HOME/left4dead2/addons/sourcemod/scripting/l4d_superversus.sp" "$SUPERVERSUS_SP_URL" && \
-   wget -O "$L4D2_HOME/left4dead2/addons/sourcemod/scripting/include/left4dhooks.inc" "$LEFT4DHOOKS_INC_URL" && \
-   [ -x "$SPCOMP" ]; then
-    cd "$L4D2_HOME/left4dead2/addons/sourcemod/scripting"
-    if "$SPCOMP" l4d_superversus.sp -o ../plugins/l4d_superversus.smx; then
-        SUPERVERSUS_COMPILED=1
-    else
-        echo "WARNING: spcomp compile failed, falling back to precompiled .smx"
-    fi
-    cd "$L4D2_HOME/left4dead2"
-fi
-if [ "$SUPERVERSUS_COMPILED" -ne 1 ]; then
-    # Precompiled fallback (file may be named SuperVersus.smx upstream; normalize to l4d_superversus.smx)
-    wget -O /tmp/superversus.smx "$SUPERVERSUS_SMX_FALLBACK_URL"
-    cp /tmp/superversus.smx "$L4D2_HOME/left4dead2/addons/sourcemod/plugins/l4d_superversus.smx"
-    rm -f /tmp/superversus.smx
-fi
-if [ ! -f "$L4D2_HOME/left4dead2/addons/sourcemod/plugins/l4d_superversus.smx" ]; then
-    echo "ERROR: SuperVersus plugin install failed" >&2
+    echo "ERROR: L4DToolZ install failed: l4dtoolz.vdf not found" >&2
     exit 1
 fi
+
+# Install SuperVersus 1.5.4 from the original AlliedModders post
+# https://forums.alliedmods.net/showthread.php?p=830069
+# Compile the official source with the installed SourceMod compiler.
+echo "[*] Installing SuperVersus..."
+SUPERVERSUS_SOURCE_URL="https://forums.alliedmods.net/attachment.php?attachmentid=54755"
+(
+    cd "$L4D2_HOME/left4dead2/addons/sourcemod/scripting"
+    SUPERVERSUS_TMP="$(mktemp -d)"
+    trap 'rm -rf "$SUPERVERSUS_TMP"' EXIT
+    wget -O "$SUPERVERSUS_TMP/l4d_superversus.sp" "$SUPERVERSUS_SOURCE_URL"
+    SPCOMP="./spcomp"
+    if [ -f ./spcomp64 ]; then
+        SPCOMP="./spcomp64"
+    fi
+    chmod +x "$SPCOMP"
+    "$SPCOMP" "$SUPERVERSUS_TMP/l4d_superversus.sp" -i include -o "$SUPERVERSUS_TMP/l4d_superversus.smx"
+    if [ ! -s "$SUPERVERSUS_TMP/l4d_superversus.smx" ]; then
+        echo "ERROR: SuperVersus compilation produced no plugin" >&2
+        exit 1
+    fi
+    install -m 644 "$SUPERVERSUS_TMP/l4d_superversus.sp" ./l4d_superversus.sp
+    mkdir -p ../plugins
+    install -m 644 "$SUPERVERSUS_TMP/l4d_superversus.smx" ../plugins/l4d_superversus.smx
+)
 
 # Link server config
 echo "[*] Linking server configuration..."
@@ -194,7 +177,7 @@ echo ""
 echo "To run server, use:"
 echo "  su - $STEAM_USER"
 echo "  cd $L4D2_HOME"
-echo "  ./srcds_run -game left4dead2 -console -autoupdate \\\"
+echo "  ./srcds_run -game left4dead2 -console -autoupdate \\"
 echo "    +hostport 27015 +sv_search_key \\\"yourkey\\\" +map c1m1_hotel"
 echo ""
 echo "Or use the startup script created at: $SCRIPT_DIR/start_l4d2_server.sh"
