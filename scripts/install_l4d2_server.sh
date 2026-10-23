@@ -167,6 +167,17 @@ SUPERVERSUS_SOURCE_URL="https://forums.alliedmods.net/attachment.php?attachmenti
     fi
 )
 
+# Install SourceMod simple admin configuration (SourceMod requires admins_simple.ini)
+echo "[*] Installing SourceMod admin configuration..."
+SOURCEMOD_ADMIN_SOURCE="$SCRIPT_DIR/../admin_simple.ini"
+SOURCEMOD_CONFIG_DIR="$L4D2_HOME/left4dead2/addons/sourcemod/configs"
+if [ ! -f "$SOURCEMOD_ADMIN_SOURCE" ]; then
+    echo "ERROR: SourceMod admin configuration not found: $SOURCEMOD_ADMIN_SOURCE" >&2
+    exit 1
+fi
+mkdir -p "$SOURCEMOD_CONFIG_DIR"
+install -m 640 "$SOURCEMOD_ADMIN_SOURCE" "$SOURCEMOD_CONFIG_DIR/admins_simple.ini"
+
 # Link server config
 echo "[*] Linking server configuration..."
 mkdir -p "$L4D2_HOME/left4dead2/cfg"
