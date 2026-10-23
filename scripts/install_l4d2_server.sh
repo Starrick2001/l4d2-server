@@ -142,20 +142,29 @@ SUPERVERSUS_SOURCE_URL="https://forums.alliedmods.net/attachment.php?attachmenti
     cd "$L4D2_HOME/left4dead2/addons/sourcemod/scripting"
     SUPERVERSUS_TMP="$(mktemp -d)"
     trap 'rm -rf "$SUPERVERSUS_TMP"' EXIT
-    wget -O "$SUPERVERSUS_TMP/l4d_superversus.sp" "$SUPERVERSUS_SOURCE_URL"
-    SPCOMP="./spcomp"
-    if [ -f ./spcomp64 ]; then
-        SPCOMP="./spcomp64"
-    fi
-    chmod +x "$SPCOMP"
-    "$SPCOMP" "$SUPERVERSUS_TMP/l4d_superversus.sp" -i include -o "$SUPERVERSUS_TMP/l4d_superversus.smx"
-    if [ ! -s "$SUPERVERSUS_TMP/l4d_superversus.smx" ]; then
-        echo "ERROR: SuperVersus compilation produced no plugin" >&2
-        exit 1
-    fi
-    install -m 644 "$SUPERVERSUS_TMP/l4d_superversus.sp" ./l4d_superversus.sp
     mkdir -p ../plugins
-    install -m 644 "$SUPERVERSUS_TMP/l4d_superversus.smx" ../plugins/l4d_superversus.smx
+    if wget -O "$SUPERVERSUS_TMP/l4d_superversus.sp" "$SUPERVERSUS_SOURCE_URL"; then
+        SPCOMP="./spcomp"
+        if [ -f ./spcomp64 ]; then
+            SPCOMP="./spcomp64"
+        fi
+        chmod +x "$SPCOMP"
+        "$SPCOMP" "$SUPERVERSUS_TMP/l4d_superversus.sp" -i include -o "$SUPERVERSUS_TMP/l4d_superversus.smx"
+        if [ ! -s "$SUPERVERSUS_TMP/l4d_superversus.smx" ]; then
+            echo "ERROR: SuperVersus compilation produced no plugin" >&2
+            exit 1
+        fi
+        install -m 644 "$SUPERVERSUS_TMP/l4d_superversus.sp" ./l4d_superversus.sp
+        install -m 644 "$SUPERVERSUS_TMP/l4d_superversus.smx" ../plugins/l4d_superversus.smx
+    else
+        echo "WARNING: SuperVersus download failed; using bundled l4d_superversus.smx" >&2
+        SUPERVERSUS_FALLBACK="$SCRIPT_DIR/../l4d_superversus.smx"
+        if [ ! -s "$SUPERVERSUS_FALLBACK" ]; then
+            echo "ERROR: Bundled SuperVersus plugin is missing or empty: $SUPERVERSUS_FALLBACK" >&2
+            exit 1
+        fi
+        install -m 644 "$SUPERVERSUS_FALLBACK" ../plugins/l4d_superversus.smx
+    fi
 )
 
 # Link server config
