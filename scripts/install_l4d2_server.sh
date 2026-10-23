@@ -189,6 +189,15 @@ ln -sf "$SCRIPT_DIR/l4d_superversus.cfg" "$L4D2_HOME/left4dead2/cfg/sourcemod/l4
 # Fix ownership (metamod/sourcemod/extracts above run as root, server runs as steam user)
 chown -R "$STEAM_USER:$STEAM_USER" "$L4D2_HOME" "$STEAM_HOME"
 
+# Allow L4D2 traffic when UFW is installed; existing rules are skipped automatically.
+if command -v ufw >/dev/null 2>&1; then
+    echo "[*] Allowing port 27015/TCP and 27015/UDP through UFW..."
+    ufw allow 27015/tcp
+    ufw allow 27015/udp
+else
+    echo "[*] UFW is not installed; skipping firewall rules."
+fi
+
 echo "[*] Installation complete!"
 echo ""
 echo "=== Server Configuration ==="
