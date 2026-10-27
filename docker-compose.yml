@@ -26,4 +26,5 @@ services:
     volumes:
       - ./scripts:/work
     stdin_open: true
+    platform: linux/amd64
     tty: true

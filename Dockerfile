@@ -1,7 +1,7 @@
 FROM ubuntu:26.04
 
 
-COPY opt/ ./opt/
+COPY opt /opt
 
 WORKDIR /work
 
